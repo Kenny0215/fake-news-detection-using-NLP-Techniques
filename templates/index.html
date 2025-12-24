@@ -107,29 +107,55 @@
     </div>
 
     <script>
-const toggleBtn = document.getElementById('theme-toggle-btn');
+        
+    const introScreen = document.getElementById('intro-screen');
 
-toggleBtn.addEventListener('click', () => {
-    document.body.classList.toggle('light-mode');
-
-    // Change icon
-    if(document.body.classList.contains('light-mode')){
-        toggleBtn.textContent = '🌙'; 
-        localStorage.setItem('theme', 'dark');
+    // Logic: If this isn't the first load of the session, hide intro immediately
+    if (sessionStorage.getItem('introFinished')) {
+        introScreen.classList.add('intro-hidden');
     } else {
-        toggleBtn.textContent = '🌞'; 
-        localStorage.setItem('theme', 'light');
+        setTimeout(() => {
+            sessionStorage.setItem('introFinished', 'true');
+            introScreen.classList.add('intro-hidden');
+        }, 3500);
     }
-});
 
-// Persist theme on reload
-const savedTheme = localStorage.getItem('theme');
-if(savedTheme === 'light') {
-    document.body.classList.add('light-mode');
-    toggleBtn.textContent = '🌙';
-} else {
-    toggleBtn.textContent = '🌞';
-}
+    const toggleBtn = document.getElementById('theme-toggle-btn');
+
+    if (sessionStorage.getItem('introFinished')) {
+        introScreen.style.display = 'none';
+    } else {
+        setTimeout(() => {
+            sessionStorage.setItem('introFinished', 'true');
+        }, 3500);
+    }
+
+    const enableLightMode = () => {
+        document.body.classList.add('light-mode');
+        toggleBtn.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+    };
+
+    const disableLightMode = () => {
+        document.body.classList.remove('light-mode');
+        toggleBtn.textContent = '🌞';
+        localStorage.setItem('theme', 'dark');
+    };
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        enableLightMode();
+    } else {
+        disableLightMode();
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        if (document.body.classList.contains('light-mode')) {
+            disableLightMode();
+        } else {
+            enableLightMode();
+        }
+    });
 </script>
 </body>
 </html>

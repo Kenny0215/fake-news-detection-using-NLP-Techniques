@@ -16,7 +16,7 @@ body {
     display: flex; 
     flex-direction: column; 
     height: 100vh;
-    transition: background 0.8s ease;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* Background pulse for Real News */
@@ -168,23 +168,22 @@ header, .dashboard {
     z-index: 2;
 }
 
-/* ===============================
-   ANIMATED INTRO SCREEN
-   =============================== */
-
 #intro-screen {
     position: fixed;
     inset: 0;
     background: linear-gradient(135deg, #1a120b, #3d1f14);
-    display: flex;
+    display: flex; 
     justify-content: center;
     align-items: center;
     z-index: 9999;
     flex-direction: column;
     color: var(--text);
     font-family: 'Inter', sans-serif;
-    animation: fadeOut 1s ease forwards;
-    animation-delay: 2.5s; /* intro duration */
+}
+
+/* Add this new class at the bottom of your CSS */
+.intro-hidden {
+    display: none !important;
 }
 
 #intro-screen .intro-content h1 {
