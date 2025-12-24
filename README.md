@@ -47,7 +47,8 @@ Example features:
 - Label
 
 > Dataset source: Kaggle (Fake and Real News Dataset)
-https://www.kaggle.com/code/mohamedasak/fake-news-detection-nlp-logistic-regression
+
+> https://www.kaggle.com/code/mohamedasak/fake-news-detection-nlp-logistic-regression
 
 ---
 
