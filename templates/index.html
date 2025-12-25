@@ -6,113 +6,111 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
 </head>
-<!-- Dynamic class based on prediction triggers background effects -->
 <body class="{% if prediction == 1 %}theme-fake{% elif prediction == 0 %}theme-real{% endif %}">
 
-<!-- Animated Intro Screen -->
+<!-- Intro Screen (Original Logic) -->
 <div id="intro-screen">
     <div class="intro-content">
         <h1>NoCap News</h1>
         <p>AI-Powered Fake News Detection</p>
-        <div class="loader">
-            <span></span><span></span><span></span>
-        </div>
+        <div class="loader"><span></span><span></span><span></span></div>
     </div>
 </div>
 
-<!-- Floating Bubble Background -->
 <div class="bubble-bg">
     <span></span><span></span><span></span><span></span><span></span>
     <span></span><span></span><span></span><span></span><span></span>
 </div>
 
-   <header>
-    <div class="logo">NoCap <span>News</span></div>
-    
-    <!-- Dark/Light mode button -->
-    <div class="theme-toggle-btn" id="theme-toggle-btn">
-        🌞
-    </div>
+<header>
+    <!-- Logo clicks back to landing page -->
+    <a href="{{ url_for('landing') }}" style="text-decoration: none; color: inherit;">
+        <div class="logo">NoCap <span>News</span></div>
+    </a>
+    <div class="theme-toggle-btn" id="theme-toggle-btn">🌞</div>
 </header>
 
+<div class="dashboard">
+    <!-- SIDEBAR (Restored to original location) -->
+    <aside id="history-sidebar">
+        <div class="history-title">
+            <span>HISTORY</span>
+            <a href="{{ url_for('clear_history') }}">CLEAR</a>
+        </div>
+        {% for item in history %}
+        <div class="history-item {{ item.result.lower() }}">
+            <p>{{ item.snippet }}</p>
+            <span class="history-tag {% if item.result == 'REAL' %}tag-real{% else %}tag-fake{% endif %}">
+                {{ item.result }}
+            </span>
+        </div>
+        {% endfor %}
+    </aside>
 
-
-    <div class="dashboard">
-        <aside>
-            <div class="history-title">
-                <span>HISTORY</span>
-                <a href="{{ url_for('clear_history') }}">CLEAR</a>
+    <!-- MAIN CONTENT -->
+    <main>
+        <div class="workspace" id="workspace-section">
+            <div class="card editor-card">
+                <form method="POST" action="{{ url_for('index') }}#workspace-section">
+                    <textarea name="news_text" placeholder="Enter content to verify authenticity...">{{ news_text }}</textarea>
+                    <button type="submit" class="btn-detect">DETECT</button>
+                </form>
             </div>
-            {% for item in history %}
-            <div class="history-item {{ item.result.lower() }}">
-                <p>{{ item.snippet }}</p>
-                <span class="history-tag {% if item.result == 'REAL' %}tag-real{% else %}tag-fake{% endif %}">
-                    {{ item.result }}
-                </span>
+
+            <div class="card report-card">
+                <h3>Intelligence Report</h3>
+                {% if prediction is not none %}
+                    <div class="status-indicator">
+                        <span class="status-dot"></span>
+                        {{ "SUSPICIOUS CONTENT" if prediction == 1 else "VERIFIED CONTENT" }}
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="chart-header"><span>Certainty Index</span><span class="chart-value">{{ confidence }}%</span></div>
+                        <div class="bar-container"><div class="bar-fill" style="width: {{ confidence }}%;"><div class="bar-glow"></div></div></div>
+                    </div>
+                    <div class="meta-data">
+                        <div class="meta-item"><small>WORD COUNT</small><span>{{ word_count }}</span></div>
+                        <div class="meta-item"><small>ALGORITHM</small><span>NLP-LR v1</span></div>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="scan-icon"></div>
+                        <p>System ready for data input.</p>
+                    </div>
+                {% endif %}
             </div>
-            {% endfor %}
-        </aside>
+        </div>
 
-        <main>
-            <div class="workspace">
-                <div class="card editor-card">
-                    <form method="POST" action="/">
-                        <textarea name="news_text" placeholder="Enter content to verify authenticity...">{{ news_text }}</textarea>
-                        <!-- Changed to DETECT -->
-                        <button type="submit" class="btn-detect">DETECT</button>
-                    </form>
-                </div>
+        <!-- Added Project Info (Inside Main so it stays aligned) -->
+        <div class="card" id="info-section" style="margin-top: 30px;">
+            <h3 style="color: var(--accent); margin-bottom: 10px;">Project Intelligence</h3>
+            <p style="color: #64748b; font-size: 14px; line-height: 1.6;">
+                Developed by a group of four students, this portal utilizes <strong>Natural Language Processing (NLP)</strong> 
+                and <strong>Logistic Regression</strong> to detect digital misinformation. 
+                Using TF-IDF vectorization, we analyze linguistic patterns to verify content authenticity.
+            </p>
+        </div>
+    </main>
+</div>
 
-                <div class="card report-card">
-                    <h3>Intelligence Report</h3>
-                    
-                    {% if prediction is not none %}
-                        <div class="status-indicator">
-                            <span class="status-dot"></span>
-                            {{ "SUSPICIOUS CONTENT" if prediction == 1 else "VERIFIED CONTENT" }}
-                        </div>
-
-                        <!-- Interactive Bar Chart Progress -->
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span>Certainty Index</span>
-                                <span class="chart-value">{{ confidence }}%</span>
-                            </div>
-                            <div class="bar-container">
-                                <div class="bar-fill" style="width: {{ confidence }}%;">
-                                    <div class="bar-glow"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="meta-data">
-                            <div class="meta-item">
-                                <small>WORD COUNT</small>
-                                <span>{{ word_count }}</span>
-                            </div>
-                            <div class="meta-item">
-                                <small>ALGORITHM</small>
-                                <span>NLP-LR v1</span>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="scan-icon"></div>
-                            <p>System ready for data input.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </main>
+<!-- Chatbot UI (Floating outside the flex container) -->
+<div id="chatbot-container">
+    <div id="chat-window" class="chat-hidden">
+        <div class="chat-header">NoCap Assistant</div>
+        <div id="chat-messages"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ask Gemini something...">
+            <button id="chat-btn">Send</button>
+        </div>
     </div>
+    <div id="chat-trigger">💬</div>
+</div>
 
-    <script>
-        
+<script>
+    // --- YOUR ORIGINAL UI LOGIC ---
     const introScreen = document.getElementById('intro-screen');
-
-    // Logic: If this isn't the first load of the session, hide intro immediately
     if (sessionStorage.getItem('introFinished')) {
-        introScreen.classList.add('intro-hidden');
+        introScreen.style.display = 'none';
     } else {
         setTimeout(() => {
             sessionStorage.setItem('introFinished', 'true');
@@ -121,41 +119,43 @@
     }
 
     const toggleBtn = document.getElementById('theme-toggle-btn');
-
-    if (sessionStorage.getItem('introFinished')) {
-        introScreen.style.display = 'none';
-    } else {
-        setTimeout(() => {
-            sessionStorage.setItem('introFinished', 'true');
-        }, 3500);
-    }
-
-    const enableLightMode = () => {
-        document.body.classList.add('light-mode');
-        toggleBtn.textContent = '🌙';
-        localStorage.setItem('theme', 'light');
-    };
-
-    const disableLightMode = () => {
-        document.body.classList.remove('light-mode');
-        toggleBtn.textContent = '🌞';
-        localStorage.setItem('theme', 'dark');
-    };
-
+    const enableLightMode = () => { document.body.classList.add('light-mode'); toggleBtn.textContent = '🌙'; localStorage.setItem('theme', 'light'); };
+    const disableLightMode = () => { document.body.classList.remove('light-mode'); toggleBtn.textContent = '🌞'; localStorage.setItem('theme', 'dark'); };
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') {
-        enableLightMode();
-    } else {
-        disableLightMode();
-    }
+    if (savedTheme === 'light') enableLightMode(); else disableLightMode();
+    toggleBtn.addEventListener('click', () => { if (document.body.classList.contains('light-mode')) disableLightMode(); else enableLightMode(); });
 
-    toggleBtn.addEventListener('click', () => {
-        if (document.body.classList.contains('light-mode')) {
-            disableLightMode();
-        } else {
-            enableLightMode();
+    // --- CHATBOT JS ---
+    const chatTrigger = document.getElementById('chat-trigger');
+    const chatWindow = document.getElementById('chat-window');
+    const chatInput = document.getElementById('chat-input');
+    const chatBtn = document.getElementById('chat-btn');
+    const chatMessages = document.getElementById('chat-messages');
+
+    chatTrigger.addEventListener('click', () => chatWindow.classList.toggle('chat-hidden'));
+
+    async function sendToBot() {
+        const val = chatInput.value;
+        if (!val) return;
+        chatMessages.innerHTML += `<div class="msg user-msg">${val}</div>`;
+        chatInput.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        const res = await fetch('/chatbot', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: val})
+        });
+        const data = await res.json();
+        chatMessages.innerHTML += `<div class="msg bot-msg">${data.msg}</div>`;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        if (data.target) {
+            document.getElementById(data.target).scrollIntoView({behavior: 'smooth'});
         }
-    });
+    }
+    chatBtn.addEventListener('click', sendToBot);
+    chatInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendToBot(); });
 </script>
 </body>
 </html>

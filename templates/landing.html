@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NoCap News | Welcome</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body class="landing-page">
+
+<div class="bubble-bg">
+    <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<header>
+    <div class="logo">NoCap <span>News</span></div>
+</header>
+
+<div class="hero-container">
+    <div class="hero-content">
+        <span class="badge">NLP APPLICATION PROJECT</span>
+        <h1>Exposing Misinformation with <span class="gradient-text">AI Intelligence</span></h1>
+        <p>Using advanced Linguistic Analysis and Logistic Regression to verify the truth in a world of digital noise. Developed by a group of 4 students.</p>
+        
+        <div class="hero-btns">
+            <a href="{{ url_for('index') }}" class="btn-primary">LAUNCH DETECTION PORTAL</a>
+            <a href="#about" class="btn-secondary">LEARN MORE</a>
+        </div>
+    </div>
+
+    <div class="hero-visual">
+    <div class="floating-image-wrapper">
+        <div class="scanner-line"></div>
+        <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1000&auto=format&fit=crop" alt="Fake News Detection Visual">
+        
+        <div class="visual-overlay">
+            <span>AI SCANNING ACTIVE</span>
+            <div class="pulse-dot"></div>
+        </div>
+    </div>
+</div>
+
+<section id="about" class="landing-info">
+    <div class="card">
+        <h3>About The Technology</h3>
+        <p>Our project implements a TF-IDF Vectorizer to convert text into mathematical data, which is then processed by a Logistic Regression model to classify news as REAL or FAKE with high precision.</p>
+    </div>
+</section>
+
+</body>
+</html>
