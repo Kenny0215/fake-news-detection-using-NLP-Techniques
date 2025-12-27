@@ -15,7 +15,7 @@ try:
     print("Model loaded successfully.")
 except Exception as e:
     print(f"Error loading model: {e}")
-    
+
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
@@ -123,4 +123,5 @@ def clear_history():
     return redirect(url_for('index'))
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
