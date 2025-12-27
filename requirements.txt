@@ -5,4 +5,3 @@ numpy==1.26.0
 pandas==2.1.1
 gunicorn
 google-generativeai
-gdown

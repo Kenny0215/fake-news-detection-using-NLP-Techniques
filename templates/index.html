@@ -8,7 +8,6 @@
 </head>
 <body class="{% if prediction == 1 %}theme-fake{% elif prediction == 0 %}theme-real{% endif %}">
 
-<!-- Intro Screen (Original Logic) -->
 <div id="intro-screen">
     <div class="intro-content">
         <h1>NoCap News</h1>
@@ -23,7 +22,6 @@
 </div>
 
 <header>
-    <!-- Logo clicks back to landing page -->
     <a href="{{ url_for('landing') }}" style="text-decoration: none; color: inherit;">
         <div class="logo">NoCap <span>News</span></div>
     </a>
@@ -31,7 +29,6 @@
 </header>
 
 <div class="dashboard">
-    <!-- SIDEBAR (Restored to original location) -->
     <aside id="history-sidebar">
         <div class="history-title">
             <span>HISTORY</span>
@@ -47,7 +44,6 @@
         {% endfor %}
     </aside>
 
-    <!-- MAIN CONTENT -->
     <main>
         <div class="workspace" id="workspace-section">
             <div class="card editor-card">

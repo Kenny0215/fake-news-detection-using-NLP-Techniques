@@ -6,6 +6,16 @@ import os
 
 load_dotenv(".env.local")
 
+# Path to your model
+MODEL_PATH = "fake_news_pipeline.pkl"
+
+# Load model ONCE
+try:
+    model = joblib.load(MODEL_PATH)
+    print("Model loaded successfully.")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
