@@ -1,45 +1,42 @@
+import os
 from flask import Flask, request, render_template, session, redirect, url_for, jsonify
 from dotenv import load_dotenv
 import google.generativeai as genai
 import joblib
-import os
 
-load_dotenv()
+# Load environment variables
+load_dotenv() 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "a-very-secret-fallback-key")
+app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24))
 
-# Path to your model
+# --- MODEL LOADING ---
 MODEL_PATH = "fake_news_pipeline.pkl"
 model = None
 
 try:
     if os.path.exists(MODEL_PATH):
         model = joblib.load(MODEL_PATH)
-        print("SUCCESS: Model loaded.")
+        print("SUCCESS: Model loaded successfully.")
     else:
-        print(f"ERROR: {MODEL_PATH} NOT FOUND in root directory!")
+        print(f"ERROR: {MODEL_PATH} not found in root directory!")
 except Exception as e:
-    print(f"ERROR: Model failed to load: {e}")
+    print(f"ERROR loading model: {e}")
 
 # --- GEMINI CONFIGURATION ---
-GEMINI_CHATBOX_API_KEY = os.getenv("GEMINI_CHATBOX_API_KEY")
-genai.configure(api_key=GEMINI_CHATBOX_API_KEY)
-gemini_model = genai.GenerativeModel('gemini-2.5-flash')
-
-try:
-    model = joblib.load("fake_news_pipeline.pkl")
-except Exception as e:
-    print(f"Error loading model: {e}")
+GEMINI_API_KEY = os.getenv("GEMINI_CHATBOX_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+else:
+    print("WARNING: GEMINI_CHATBOX_API_KEY is missing!")
 
 @app.route("/")
 def landing():
-    """This renders the professional intro page first."""
     return render_template("landing.html")
 
 @app.route("/dashboard", methods=["GET", "POST"])
 def index():
-    """This handles the main fake news detection logic."""
     prediction = None
     confidence = None
     news_text = ""
@@ -50,23 +47,33 @@ def index():
 
     if request.method == "POST":
         news_text = request.form.get("news_text", "").strip()
-        if news_text:
-            pred_value = int(model.predict([news_text])[0])
-            probability = model.predict_proba([news_text])[0]
-            
-            prediction = pred_value
-            confidence = round(max(probability) * 100, 2)
-            word_count = len(news_text.split())
+        
+        # SAFETY CHECK: If model didn't load, don't crash the server
+        if model is None:
+            return "Server Error: ML Model file is missing or corrupted. Check Render logs.", 500
 
-            new_entry = {
-                "snippet": news_text[:35] + "...", 
-                "result": "REAL" if prediction == 0 else "FAKE",
-                "conf": confidence
-            }
-            history_list = session.get('history', [])
-            history_list.insert(0, new_entry)
-            session['history'] = history_list[:5]
-            session.modified = True 
+        if news_text:
+            try:
+                # Run prediction
+                pred_value = int(model.predict([news_text])[0])
+                probability = model.predict_proba([news_text])[0]
+                
+                prediction = pred_value
+                confidence = round(max(probability) * 100, 2)
+                word_count = len(news_text.split())
+
+                new_entry = {
+                    "snippet": news_text[:35] + "...", 
+                    "result": "REAL" if prediction == 0 else "FAKE",
+                    "conf": confidence
+                }
+                history_list = session.get('history', [])
+                history_list.insert(0, new_entry)
+                session['history'] = history_list[:5]
+                session.modified = True 
+            except Exception as e:
+                print(f"Prediction Error: {e}")
+                prediction = "error"
         else:
             prediction = "empty"
 
@@ -81,49 +88,15 @@ def index():
 
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
-    """Handles smart chat and automatic UI redirection."""
     user_msg = request.json.get("message", "")
-    
-    system_context = (
-    "You are an expert Fake News Detector AI for a student NLP project called NoCap. "
-    "Your core task is to analyze, explain, and answer questions related ONLY to fake news detection, "
-    "news verification, misinformation, and how the system works. "
-    "The system uses Natural Language Processing and Logistic Regression to classify news as REAL or FAKE. "
-    
-    "You are allowed to answer:\n"
-    "- How fake news is detected\n"
-    "- How Logistic Regression and NLP are used\n"
-    "- Questions about news credibility\n"
-    "- Questions related to the system features and directories (Workspace, Intelligence)\n"
-    
-    "Rules:\n"
-    "- If the question is NOT related to news, fake news detection, or the system directory, "
-    "politely refuse and say you can only answer fake-news-related questions.\n"
-    "- Keep answers short, clear, and technical.\n"
-    "- If the user wants to analyze or scan news, mention 'Workspace'.\n"
-    "- If the user wants model, dataset, or system explanation, mention 'Intelligence'."
-    )
+    system_context = "You are an expert Fake News Detector AI..."
 
     try:
         response = gemini_model.generate_content(f"{system_context} User: {user_msg}")
         bot_reply = response.text
-        
-        target = None
-        reply_lower = bot_reply.lower()
-        if any(x in reply_lower for x in ["workspace", "detect", "paste"]):
-            target = "workspace-section"
-        elif any(x in reply_lower for x in ["intelligence", "about", "team", "logic"]):
-            target = "info-section"
-
-        return jsonify({"msg": bot_reply, "target": target})
+        return jsonify({"msg": bot_reply, "target": None})
     except Exception as e:
-        return jsonify({"msg": "Connection to AI failed. Try again!", "target": None})
-
-@app.route("/clear_history")
-def clear_history():
-    session['history'] = []
-    session.modified = True
-    return redirect(url_for('index'))
+        return jsonify({"msg": "AI Chat currently unavailable.", "target": None})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
