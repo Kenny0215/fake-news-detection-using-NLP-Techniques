@@ -19,13 +19,11 @@ try:
 except Exception as e:
     print(f"Error loading model: {e}")
 
-# --- ROUTE 1: LANDING PAGE ---
 @app.route("/")
 def landing():
     """This renders the professional intro page first."""
     return render_template("landing.html")
 
-# --- ROUTE 2: DETECTION DASHBOARD ---
 @app.route("/dashboard", methods=["GET", "POST"])
 def index():
     """This handles the main fake news detection logic."""
@@ -40,7 +38,6 @@ def index():
     if request.method == "POST":
         news_text = request.form.get("news_text", "").strip()
         if news_text:
-            # Predict using the loaded model
             pred_value = int(model.predict([news_text])[0])
             probability = model.predict_proba([news_text])[0]
             
@@ -48,7 +45,6 @@ def index():
             confidence = round(max(probability) * 100, 2)
             word_count = len(news_text.split())
 
-            # Update History (Keep last 5)
             new_entry = {
                 "snippet": news_text[:35] + "...", 
                 "result": "REAL" if prediction == 0 else "FAKE",
@@ -70,25 +66,35 @@ def index():
         history=session.get('history', [])
     )
 
-# --- ROUTE 3: GEMINI CHATBOT ---
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
     """Handles smart chat and automatic UI redirection."""
     user_msg = request.json.get("message", "")
     
-    # Context tells Gemini who it is and how to behave
     system_context = (
-        "You are the NoCap Assistant for a student NLP project. "
-        "The project uses Logistic Regression to detect fake news. "
-        "Keep answers short. If the user wants to scan news, mention 'Workspace'. "
-        "If they want project details, mention 'Intelligence'."
+    "You are an expert Fake News Detector AI for a student NLP project called NoCap. "
+    "Your core task is to analyze, explain, and answer questions related ONLY to fake news detection, "
+    "news verification, misinformation, and how the system works. "
+    "The system uses Natural Language Processing and Logistic Regression to classify news as REAL or FAKE. "
+    
+    "You are allowed to answer:\n"
+    "- How fake news is detected\n"
+    "- How Logistic Regression and NLP are used\n"
+    "- Questions about news credibility\n"
+    "- Questions related to the system features and directories (Workspace, Intelligence)\n"
+    
+    "Rules:\n"
+    "- If the question is NOT related to news, fake news detection, or the system directory, "
+    "politely refuse and say you can only answer fake-news-related questions.\n"
+    "- Keep answers short, clear, and technical.\n"
+    "- If the user wants to analyze or scan news, mention 'Workspace'.\n"
+    "- If the user wants model, dataset, or system explanation, mention 'Intelligence'."
     )
 
     try:
         response = gemini_model.generate_content(f"{system_context} User: {user_msg}")
         bot_reply = response.text
         
-        # Determine if the bot should trigger a scroll on the UI
         target = None
         reply_lower = bot_reply.lower()
         if any(x in reply_lower for x in ["workspace", "detect", "paste"]):
@@ -100,7 +106,6 @@ def chatbot():
     except Exception as e:
         return jsonify({"msg": "Connection to AI failed. Try again!", "target": None})
 
-# --- ROUTE 4: CLEAR HISTORY ---
 @app.route("/clear_history")
 def clear_history():
     session['history'] = []
