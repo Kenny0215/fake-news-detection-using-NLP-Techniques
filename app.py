@@ -4,20 +4,23 @@ import google.generativeai as genai
 import joblib
 import os
 
-load_dotenv(".env.local")
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "a-very-secret-fallback-key")
 
 # Path to your model
 MODEL_PATH = "fake_news_pipeline.pkl"
+model = None
 
-# Load model ONCE
 try:
-    model = joblib.load(MODEL_PATH)
-    print("Model loaded successfully.")
+    if os.path.exists(MODEL_PATH):
+        model = joblib.load(MODEL_PATH)
+        print("SUCCESS: Model loaded.")
+    else:
+        print(f"ERROR: {MODEL_PATH} NOT FOUND in root directory!")
 except Exception as e:
-    print(f"Error loading model: {e}")
-
-app = Flask(__name__)
-app.secret_key = os.urandom(24)
+    print(f"ERROR: Model failed to load: {e}")
 
 # --- GEMINI CONFIGURATION ---
 GEMINI_CHATBOX_API_KEY = os.getenv("GEMINI_CHATBOX_API_KEY")
