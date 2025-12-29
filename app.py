@@ -6,37 +6,52 @@ import os
 
 load_dotenv(".env.local")
 
-# Path to your model
-MODEL_PATH = "fake_news_pipeline.pkl"
-
-# Load model ONCE
-try:
-    model = joblib.load(MODEL_PATH)
-    print("Model loaded successfully.")
-except Exception as e:
-    print(f"Error loading model: {e}")
-
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+# --- MODEL LOADING ---
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "fake_news_pipeline.pkl")
+model = None
+
+def load_model():
+    global model
+    try:
+        if os.path.exists(MODEL_PATH):
+            model = joblib.load(MODEL_PATH)
+            print("Model loaded successfully.")
+        else:
+            print(f"Model file not found at {MODEL_PATH}")
+    except Exception as e:
+        print(f"Error loading model: {e}")
+
+# Load model once when app starts
+load_model()
 
 # --- GEMINI CONFIGURATION ---
 GEMINI_CHATBOX_API_KEY = os.getenv("GEMINI_CHATBOX_API_KEY")
 genai.configure(api_key=GEMINI_CHATBOX_API_KEY)
-gemini_model = genai.GenerativeModel('gemini-2.5-flash')
 
-try:
-    model = joblib.load("fake_news_pipeline.pkl")
-except Exception as e:
-    print(f"Error loading model: {e}")
+gemini_model = genai.GenerativeModel('gemini-2.0-flash')
+
+# --- HELPER FUNCTION FOR PREDICTION ---
+def get_prediction(text):
+    if model is None:
+        return None, None
+    try:
+        pred_value = int(model.predict([text])[0])
+        probability = model.predict_proba([text])[0]
+        confidence = round(max(probability) * 100, 2)
+        return pred_value, confidence
+    except Exception as e:
+        print(f"Prediction Error: {e}")
+        return None, None
 
 @app.route("/")
 def landing():
-    """This renders the professional intro page first."""
     return render_template("landing.html")
 
 @app.route("/dashboard", methods=["GET", "POST"])
 def index():
-    """This handles the main fake news detection logic."""
     prediction = None
     confidence = None
     news_text = ""
@@ -48,22 +63,20 @@ def index():
     if request.method == "POST":
         news_text = request.form.get("news_text", "").strip()
         if news_text:
-            pred_value = int(model.predict([news_text])[0])
-            probability = model.predict_proba([news_text])[0]
-            
-            prediction = pred_value
-            confidence = round(max(probability) * 100, 2)
+            # Using the helper function
+            prediction, confidence = get_prediction(news_text)
             word_count = len(news_text.split())
 
-            new_entry = {
-                "snippet": news_text[:35] + "...", 
-                "result": "REAL" if prediction == 0 else "FAKE",
-                "conf": confidence
-            }
-            history_list = session.get('history', [])
-            history_list.insert(0, new_entry)
-            session['history'] = history_list[:5]
-            session.modified = True 
+            if prediction is not None:
+                new_entry = {
+                    "snippet": news_text[:35] + "...", 
+                    "result": "REAL" if prediction == 0 else "FAKE",
+                    "conf": confidence
+                }
+                history_list = session.get('history', [])
+                history_list.insert(0, new_entry)
+                session['history'] = history_list[:5]
+                session.modified = True 
         else:
             prediction = "empty"
 
@@ -78,9 +91,7 @@ def index():
 
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
-    """Handles smart chat and automatic UI redirection."""
     user_msg = request.json.get("message", "")
-    
     system_context = (
     "You are an expert Fake News Detector AI for a student NLP project called NoCap. "
     "Your core task is to analyze, explain, and answer questions related ONLY to fake news detection, "
@@ -113,8 +124,8 @@ def chatbot():
             target = "info-section"
 
         return jsonify({"msg": bot_reply, "target": target})
-    except Exception as e:
-        return jsonify({"msg": "Connection to AI failed. Try again!", "target": None})
+    except Exception:
+        return jsonify({"msg": "AI logic busy. Try again!", "target": None})
 
 @app.route("/clear_history")
 def clear_history():
@@ -123,6 +134,5 @@ def clear_history():
     return redirect(url_for('index'))
 
 if __name__ == "__main__":
-     # Use the port assigned by Render, default to 5000
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
