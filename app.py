@@ -91,31 +91,39 @@ def index():
 
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
+    """Handles smart chat and real-time fake news detection within the chat."""
     user_msg = request.json.get("message", "")
+    
+    # 1. RUN THE LOCAL MODEL FIRST
+    local_pred, local_conf = get_prediction(user_msg)
+    
+    # Create a status string to tell Gemini what our model found
+    model_insight = ""
+    if local_pred is not None and len(user_msg.split()) > 5:
+        result_str = "FAKE" if local_pred == 1 else "REAL"
+        model_insight = f" (NOTE: Our local NLP model analyzed this text and is {local_conf}% sure it is {result_str}.)"
+
+    # 2. UPDATE SYSTEM CONTEXT
     system_context = (
-    "You are an expert Fake News Detector AI for a student NLP project called NoCap. "
-    "Your core task is to analyze, explain, and answer questions related ONLY to fake news detection, "
-    "news verification, misinformation, and how the system works. "
-    "The system uses Natural Language Processing and Logistic Regression to classify news as REAL or FAKE. "
-    
-    "You are allowed to answer:\n"
-    "- How fake news is detected\n"
-    "- How Logistic Regression and NLP are used\n"
-    "- Questions about news credibility\n"
-    "- Questions related to the system features and directories (Workspace, Intelligence)\n"
-    
-    "Rules:\n"
-    "- If the question is NOT related to news, fake news detection, or the system directory, "
-    "politely refuse and say you can only answer fake-news-related questions.\n"
-    "- Keep answers short, clear, and technical.\n"
-    "- If the user wants to analyze or scan news, mention 'Workspace'.\n"
-    "- If the user wants model, dataset, or system explanation, mention 'Intelligence'."
+        "You are an expert Fake News Detector AI named NoCap. "
+        "Your task is to analyze news credibility and explain system features. "
+        "If a user provides a news article or claim in the chat, use the provided 'Model Insight' to give them a verdict. "
+        "Always explain WHY a piece of news might be flagged (e.g., look for sensationalism, lack of sources, or clickbait patterns)."
+        "\n\nSystem Details: Uses NLP & Logistic Regression. Directories: Workspace (for main scanning), Intelligence (for tech details)."
+        "\n\nRules: "
+        "- Be professional but direct."
+        "- If the text is unrelated to news or the project, politely stay on topic."
+        "- If 'Model Insight' is provided, use it to guide your answer."
     )
 
     try:
-        response = gemini_model.generate_content(f"{system_context} User: {user_msg}")
+        # 3. PASS EVERYTHING TO GEMINI
+        full_prompt = f"{system_context}\nModel Insight: {model_insight}\nUser says: {user_msg}"
+        
+        response = gemini_model.generate_content(full_prompt)
         bot_reply = response.text
         
+        # 4. AUTO-REDIRECT LOGIC
         target = None
         reply_lower = bot_reply.lower()
         if any(x in reply_lower for x in ["workspace", "detect", "paste"]):
@@ -124,8 +132,9 @@ def chatbot():
             target = "info-section"
 
         return jsonify({"msg": bot_reply, "target": target})
-    except Exception:
-        return jsonify({"msg": "AI logic busy. Try again!", "target": None})
+    except Exception as e:
+        print(f"Chatbot Error: {e}")
+        return jsonify({"msg": "I encountered an error analyzing that. Please try the main Workspace detector!", "target": None})
 
 @app.route("/clear_history")
 def clear_history():
