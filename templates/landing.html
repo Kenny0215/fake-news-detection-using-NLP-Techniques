@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NoCap News | Welcome</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap" rel="stylesheet">
+    <style>html { scroll-behavior: smooth; }</style>
 </head>
 <body class="landing-page">
 
 <div class="bubble-bg">
+    <span></span><span></span><span></span><span></span><span></span>
     <span></span><span></span><span></span><span></span><span></span>
 </div>
 
@@ -20,8 +23,7 @@
     <div class="hero-content">
         <span class="badge">NLP APPLICATION PROJECT</span>
         <h1>Exposing Misinformation with <span class="gradient-text">AI Intelligence</span></h1>
-        <p>Using advanced Linguistic Analysis and Logistic Regression to verify the truth in a world of digital noise.</p>
-        
+        <p>Using advanced Linguistic Analysis and Logistic Regression to verify the truth in a world of digital noise. Developed by a group of 4 students.</p>
         <div class="hero-btns">
             <a href="{{ url_for('index') }}" class="btn-primary">LAUNCH DETECTION PORTAL</a>
             <a href="#about" class="btn-secondary">LEARN MORE</a>
@@ -29,23 +31,104 @@
     </div>
 
     <div class="hero-visual">
-    <div class="floating-image-wrapper">
-        <div class="scanner-line"></div>
-        <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1000&auto=format&fit=crop" alt="Fake News Detection Visual">
-        
-        <div class="visual-overlay">
-            <span>AI SCANNING ACTIVE</span>
-            <div class="pulse-dot"></div>
+        <div class="floating-image-wrapper">
+            <div class="scanner-line"></div>
+            <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1000&auto=format&fit=crop" alt="Fake News Visual">
+            <div class="visual-overlay">
+                <span>AI SCANNING ACTIVE</span>
+                <div class="pulse-dot"></div>
+            </div>
         </div>
     </div>
 </div>
 
 <section id="about" class="landing-info">
-    <div class="card">
-        <h3>About The Technology</h3>
-        <p>Our project implements a TF-IDF Vectorizer to convert text into mathematical data, which is then processed by a Logistic Regression model to classify news as REAL or FAKE with high precision.</p>
+    <div class="card info-block">
+        <div class="card-glow"></div>
+        <h3 style="color: var(--accent); margin-bottom: 15px;">The Mission</h3>
+        <p>In an era of digital propaganda, <strong>NoCap News</strong> provides a holographic, AI-driven second opinion on news articles using high-speed linguistic computation to filter misinformation patterns.</p>
+    </div>
+
+    <div class="card info-block">
+        <div class="card-glow"></div>
+        <h3 style="color: var(--accent); margin-bottom: 15px;">Summary NLP Pipeline</h3>
+        <div class="pipeline-grid">
+            <div class="pipeline-item">
+                <span style="font-size: 24px;">🔍</span>
+                <h4>Preprocessing</h4>
+                <p>Cleaning raw strings by removing stopwords and linguistic noise.</p>
+            </div>
+            <div class="pipeline-item">
+                <span style="font-size: 24px;">🔢</span>
+                <h4>Vectorization</h4>
+                <p>Converting text into TF-IDF mathematical weight vectors.</p>
+            </div>
+            <div class="pipeline-item">
+                <span style="font-size: 24px;">🧠</span>
+                <h4>Logistic Regression</h4>
+                <p>Statistical probability classification for the final truth verdict.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- THE TEAM SECTION -->
+    <div class="team-section">
+        <div class="team-header">
+            <h2>Group Member : <span class="gradient-text">NoCap News</span></h2>
+        </div>
+
+        <div class="team-grid">
+            <!-- KENNY -->
+            <div class="member-card info-block">
+                <div class="card-glow"></div>
+                <div class="member-image">
+                    <img src="{{ url_for('static', filename='images/kenny.jpg') }}" alt="Kenny Khow">
+                </div>
+                <h4>KENNY KHOW JIUN XIAN</h4>
+                <span class="student-id">B032310349</span>
+            </div>
+
+            <!-- TAY -->
+            <div class="member-card info-block">
+                <div class="card-glow"></div>
+                <div class="member-image">
+                    <img src="{{ url_for('static', filename='images/tay.jpg') }}" alt="Tay Sher Yang">
+                </div>
+                <h4>TAY SHER YANG</h4>
+                <span class="student-id">B032310363</span>
+            </div>
+
+            <!-- ANG -->
+            <div class="member-card info-block">
+                <div class="card-glow"></div>
+                <div class="member-image">
+                    <img src="{{ url_for('static', filename='images/ang.jpg') }}" alt="Ang Wei En">
+                </div>
+                <h4>ANG WEI EN</h4>
+                <span class="student-id">B032310502</span>
+            </div>
+
+            <!-- NG -->
+            <div class="member-card info-block">
+                <div class="card-glow"></div>
+                <div class="member-image">
+                    <img src="{{ url_for('static', filename='images/ng.jpg') }}" alt="Ng Guo Heng">
+                </div>
+                <h4>NG GUO HENG</h4>
+                <span class="student-id">B032310331</span>
+            </div>
+        </div>
     </div>
 </section>
 
+<script>
+    document.querySelectorAll('.info-block').forEach(card => {
+        card.onmousemove = e => {
+            const rect = card.getBoundingClientRect();
+            card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+            card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        };
+    });
+</script>
 </body>
 </html>
