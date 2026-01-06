@@ -50,19 +50,39 @@
         </div>
     <div class="card report-card">
         <h3>Intelligence Report</h3>
-        {% if prediction is not none %}
+        
+        <!-- Case 1: Input is too short -->
+        {% if prediction == "too_short" %}
+            <div style="margin-top:20px; padding:20px; border: 2px dashed var(--fake); border-radius:15px; text-align:center;">
+                <span style="font-size: 30px;">⚠️</span>
+                <p style="font-size:14px; color:white; margin-top:10px; font-weight:bold;">
+                    Your input is too short. Please provide a longer paragraph (minimum 10 words).
+                </p>
+            </div>
+
+        <!-- Case 2: Analysis is successful -->
+        {% elif prediction is not none %}
             <div class="status-indicator">
                 <span class="status-dot"></span>
                 {{ "SUSPICIOUS CONTENT" if prediction == 1 else "VERIFIED CONTENT" }}
             </div>
             <div class="chart-wrapper">
                 <div class="chart-header"><span>Certainty Index</span><span class="chart-value">{{ confidence }}%</span></div>
-                <div class="bar-container"><div class="bar-fill" style="width: {{ confidence }}%;"><div class="bar-glow"></div></div></div>
+                <div class="bar-container"><div class="bar-fill" style="width: {{ confidence }}%;"></div></div>
             </div>
+            
+            <!-- Brief explanation requirement -->
+            <div style="margin-top:15px; padding:10px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:12px;">
+                <strong>Note:</strong> This text was flagged as {{ "Fake" if prediction == 1 else "Real" }} 
+                based on linguistic patterns and structural analysis detected by the NLP-LR v1 algorithm.
+            </div>
+
             <div class="meta-data">
                 <div class="meta-item"><small>WORD COUNT</small><span>{{ word_count }}</span></div>
                 <div class="meta-item"><small>ALGORITHM</small><span>NLP-LR v1</span></div>
             </div>
+
+        <!-- Case 3: Empty state -->
         {% else %}
             <div class="empty-state">
                 <div class="scan-icon"></div>
@@ -70,16 +90,20 @@
             </div>
         {% endif %}
     </div>
+    </div>
 
 </main>
 </div>
 <!-- Chatbot UI (Floating outside the flex container) -->
 <div id="chatbot-container">
     <div id="chat-window" class="chat-hidden">
-        <div class="chat-header">NoCap Assistant</div>
+        <div class="chat-header">
+            <span>NoCap Assistant</span>
+            <span id="clear-chat" style="cursor:pointer; float:right;">🗑️</span>
+        </div>
         <div id="chat-messages"></div>
         <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Ask Gemini something...">
+            <input type="text" id="chat-input" placeholder="Ask NoCap Assistant something...">
             <button id="chat-btn">Send</button>
         </div>
     </div>
@@ -109,6 +133,10 @@
     const chatInput = document.getElementById('chat-input');
     const chatBtn = document.getElementById('chat-btn');
     const chatMessages = document.getElementById('chat-messages');
+
+    document.getElementById('clear-chat').onclick = () => {
+        chatMessages.innerHTML = "";
+    };
 
     chatTrigger.addEventListener('click', () => chatWindow.classList.toggle('chat-hidden'));
 

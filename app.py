@@ -66,8 +66,14 @@ def index():
             # Using the helper function
             prediction, confidence = get_prediction(news_text)
             word_count = len(news_text.split())
+            
+            if word_count < 10:
+                prediction = "too_short" # Set a special flag
+            else:
+                # Only analyze if 10 words or more
+                prediction, confidence = get_prediction(news_text)
 
-            if prediction is not None:
+            if prediction is not None and prediction != "too_short":
                 new_entry = {
                     "snippet": news_text[:35] + "...", 
                     "result": "REAL" if prediction == 0 else "FAKE",
