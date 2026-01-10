@@ -76,7 +76,7 @@ git clone https://github.com/Kenny0215/fake-news-detection-using-NLP-Techniques.
    pip install -r requirements.txt
    ```
 
-3. **Run for Local Host for Testing**
+3. **Run Local Host for Testing**
    ```bash
    python app.py
    ```
