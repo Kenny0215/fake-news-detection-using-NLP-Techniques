@@ -69,3 +69,14 @@ Example features:
 1. **Clone the repository**
 ```bash
 git clone https://github.com/Kenny0215/fake-news-detection-using-NLP-Techniques.git
+```
+
+2. **Install Requirements Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run for Local Host for Testing**
+   ```bash
+   python app.py
+   ```
