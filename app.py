@@ -100,7 +100,7 @@ def chatbot():
     """Handles smart chat and real-time fake news detection within the chat."""
     user_msg = request.json.get("message", "")
     
-    # 1. RUN THE LOCAL MODEL FIRST
+    # RUN THE LOCAL MODEL FIRST
     local_pred, local_conf = get_prediction(user_msg)
     
     # Create a status string to tell Gemini what our model found
@@ -109,17 +109,22 @@ def chatbot():
         result_str = "FAKE" if local_pred == 1 else "REAL"
         model_insight = f" (NOTE: Our local NLP model analyzed this text and is {local_conf}% sure it is {result_str}.)"
 
-    # 2. UPDATE SYSTEM CONTEXT
+     # SYSTEM CONTEXT: Teaches Gemini about the portal sections
     system_context = (
-        "You are an expert Fake News Detector AI named NoCap. "
-        "Your task is to analyze news credibility and explain system features. "
-        "If a user provides a news article or claim in the chat, use the provided 'Model Insight' to give them a verdict. "
-        "Always explain WHY a piece of news might be flagged (e.g., look for sensationalism, lack of sources, or clickbait patterns)."
-        "\n\nSystem Details: Uses NLP & Logistic Regression. Directories: Workspace (for main scanning), Intelligence (for tech details)."
-        "\n\nRules: "
-        "- Be professional but direct."
-        "- If the text is unrelated to news or the project, politely stay on topic."
-        "- If 'Model Insight' is provided, use it to guide your answer."
+        "You are the NoCap Assistant. Guide the user based on these portal sections:\n"
+        "1. 'workspace-section': Where users paste news and click DETECT.\n"
+        "2. 'info-section': Explains the NLP, Logistic Regression, and 2015-2017 dataset.\n"
+        "3. 'history-sidebar': Where past scans are stored.\n"
+        "4. 'team': The section on the landing page showing Kenny, Tay, Ang, and Ng.\n"
+        "\nCommon Queries you must handle:\n"
+        "- How to use: Tell them to go to the Workspace.\n"
+        "- Accuracy: Explain the 98.8% accuracy and point to Project Intelligence.\n"
+        "- Developers/Team: Mention the 4 students and point to the Team section.\n"
+        "- Algorithm: Explain TF-IDF and Logistic Regression.\n"
+        "- Dataset: Mention the 2015-2017 historical news data.\n"
+        "- History: Tell them to check the left sidebar.\n"
+        "\nRules: If you guide them to a section, include the section ID in your response "
+        "wrapped in square brackets like [workspace-section] or [info-section]."
     )
 
     try:
